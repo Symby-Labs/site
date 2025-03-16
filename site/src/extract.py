@@ -42,19 +42,21 @@ def save_image_from_bbox(image, annotation, page, output_dir):
 
 def pdf_to_table_figures(page_images: List[Image], model_id: str = "yifeihu/TF-ID-large-no-caption", output_dir: str | Path = "./sample_output"):
 
-	timestr = time.strftime("%Y%m%d-%H%M%S")
-	output_dir = Path(output_dir) / f"output_{timestr}"
+	if not isinstance(output_dir, Path):
+		output_dir = Path(output_dir)
 	output_dir.mkdir(parents=True, exist_ok=True)
 
 	#TODO: Add logging.
-	# print(f"PDF loaded. Number of pages: {len(page_images)}")
 	model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True)
 	processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
 
+	images = []
 	for i, image in enumerate(page_images):
 		annotation = tf_id_detection(image, model, processor)
 		save_image_from_bbox(image, annotation, i, output_dir)
+		images.append(image)
 	
+	return images
 
 
 
